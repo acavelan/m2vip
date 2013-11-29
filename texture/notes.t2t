@@ -1,0 +1,128 @@
+Imagerie Opérationnelle -- Textures
+Cavelan Aurélien
+%%mtime(%d/%m/%Y)
+%!Encoding: utf-8
+%!options: -n --toc
+%!style(tex): notes.sty
+
+
++Analyse des images originales+
+
+[results/histo_original.jpg]
+
+Les spectres des deux images sont différents. L'histogramme de OP atteint un maximum de 1500 vers la valeur 60 tandis que l'histogramme de CT atteint un maximum de 1150 vers 75. Cela peut s'expliquer par le fait que l'histogramme de CT est plus étalé que l'histogramme de OP (15 à 160 contre 25 à 150).
+
+Afin de comparer les images j'ai utilisé les fonction ``var``, ``mean`` et ``kurtosis`` de Matlab. J'ai écris une fonction analyse pour automatiser le calcul des différents paramètres.
+
+```
+function analyse(str, A, B)
+	meanA = mean(A(:));
+	meanB = mean(B(:));
+	
+	DA = im2double(A);
+	DB = im2double(B);
+
+	varA = var(DA(:));
+	varB = var(DB(:));
+
+	kurA = kurtosis(DA(:));
+	kurB = kurtosis(DB(:));
+
+	printf("%s\n", str);
+	printf("A: mean=%f, variance=%f, kurtosis=%f\n", meanA, varA, kurA);
+	printf("B: mean=%f, variance=%f, kurtosis=%f\n", meanB, varB, kurB);
+end
+```
+
+|   | mean | variance | kurtosis |
+| A | 63.211 | 0.006 | 1.472 |
+| B | 78.270 | 0.010 | 0.113 |
+
+Les deux images se ressemblent visuellement et on observe des similitudes entre la moyenne et la faible variance. L'image de droite est plus claire, d'où la différence dans la mieynne. On ne peu pas porter de conlusions sur le curtosis pour le moment.
+
+
++Quantification en niveaux de gris+
+
+[results/quantification.jpg]
+
+La quantification en niveaux de gris permet d'observer plus facilement les variations de contraste entre les deux images. On distingue des patrons semblables entre ces deux images.
+
+[results/histograms.jpg]
+
+**4 niveaux**
+
+|   | mean | variance | kurtosis |
+| A | 67.259 | 0.006 | 7.262 |
+| B | 77.735 | 0.015 | 0.296 |
+
+**8 niveaux**
+
+|   | mean | variance | kurtosis |
+| A | 63.771 | 0.007 | 1.0397 |
+| B | 78.689 | 0.012 | 0.0902 |
+
+
+**16 niveaux**
+
+|   | mean | variance | kurtosis |
+| A | 63.724 | 0.006 | 1.307018 |
+| B | 78.761 | 0.011 | 0.128107 |
+
+Après quantification il est possible de différencier facilement les images en 4 niveaux de gris. L'histogramme de la première image est centré vers 60 tandis que celui de la deuxième image est divisée entre 60 et 130.
+
+De même pour les statistiques, l'écart est de 0.009 pour la variance et de 7 pour le kurtosis en 4 niveaux de gris. Pour 16 niveaux de gris la différence n'est plus que de 0.005 pour la variance et 1.2 pour le kurtosis.
+
+
++Filtre passe-haut+
+
+Le filtre passe-haut permet de mettre avant les constrastes. J'ai utilisé un filtre obtenue en soustrayant un filtre passe-bas au filtre de base.
+
+```
+0 0 0       1 1 1   -1 -1 -1
+0 1 0 - 1/9 1 1 1 = -1  8 -1
+0 0 0       1 1 1   -1 -1 -1
+```
+
+La fonction ``imfilter`` de Matlab permet ensuite d'appliquer ce filtre aux images originales.
+
+[results/high-pass.jpg]
+
+[results/high-pass_quantification.jpg]
+
+[results/high-pass_histograms.jpg]
+
+**4 niveaux**
+
+|   | mean | variance | kurtosis |
+| A | 10.255 | 0.014 | 24.521
+| B | 10.686 | 0.016 | 26.491
+
+**8 niveaux**
+
+|   | mean | variance | kurtosis |
+| A | 12.619 | 0.0124 | 30.005 |
+| B | 13.069 | 0.0141 | 32.518 |
+
+**16 niveaux**
+
+|   | mean | variance | kurtosis |
+| A | 13.160 | 0.0118 | 33.166 |
+| B | 13.565 | 0.0134 | 35.623 |
+
+Le filtre passe-haut laisse passer les hautes fréquences. Les résultats sont très similaires pour les deux images. On peut en déduire que ce sont seulement les basses fréquences qui permettent de les différencier.
+
+
++Local Binary Pattern+
+
+[results/lbp.jpg]
+
+|   | mean | variance | kurtosis |
+| A | 133.838 | 0.115 | -1.444741 |
+| B | 132.780 | 0.114 | -1.433661 |
+
+Enfin, le //Local Binary Pattern// ne permet plus de distinguer les deux images. La moyenne, la variance et le kurtosis sont pratiquement identiques. 
+
+**Conclusion**
+
+Les images possèdent donc des caractéristiques très semblables. Les images ne sont pas identique, les couleurs sont différentes (éclairage, histogrammes, moyenne, ...) mais possèdent les mêmes motifs. La texture de ces images est très semblable comme le montre filtre passe-haut et et le Local Binary Pattern.
+

@@ -1,0 +1,15 @@
+GPU				ROG			Opteron
+sobel			145			257
+sobel_stream	260			473
+sobel_zerocopy	330			780
+histo			460			465
+histo_atomic	470			425
+histo_atomic2	380			420
+histo_stream	550			600
+histo_zerocopy	610			920
+
+
+CPU				ROG			Opteron
+sobel			280			1112
+histo			1830			465
+

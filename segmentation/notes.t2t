@@ -1,0 +1,364 @@
+Imagerie Opérationnelle -- Segmentation d'images
+Cavelan Aurélien
+%%mtime(%d/%m/%Y)
+%!Encoding: utf-8
+%!options: -n --toc
+%!style(tex): notes.sty
+
+
++Filtres+
+
+L'objectif de cette première partie est de comparer l'efficacité de différents filtres et d'évaluer l'impacte du bruit sur le résultat. J'ai commencé par utiliser plusieurs filtres connus sur les images non-modifiées afin d'obtenir des résultats qui serviront de référence pour la suite. J'ai ensuite appliqué plusieurs niveaux de bruit aux images originales en appliquant à chaque fois les filtres afin de pouvoir comparer les résultats avec les images de références.
+
+Pour cela j'ai utilisé Octave (clone libre de Matlab) qui dispose de plusieurs méthodes built-in permettant d'appliquer des filtres et du bruit aux images. Je donnerai à chaque fois les différents paramètres utilisés lors des tests.
+
+Les filtres comparés sont:
+- canny
+- prewitt
+- sobel
+- roberts
+- kirsch
+
+
+++Image originale++
+
+Ci-dessous les filtres appliqués sur l'image originale. Tputes les images générées se trouvent dans le dossier **results/**. Pour simplifier ce compte-rendu seul Prewitt, Sobel, Canny et Roberts seront comparés en prodondeur.
+
+```
+canny = edge(imgd, "canny");
+sobel = edge(imgd, "sobel", 0.45);
+prewitt = edge(imgd, "prewitt", 0.3);
+roberts = edge(imgd, "roberts", 0.15);
+```
+
+[results/origin/canny.jpg] [results/origin/prewitt.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/origin/sobel.jpg] [results/origin/roberts.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+On peut déjà constater des différences entre le résultat des filtres sur l'image originale. L'opérateur Canny est celui qui donne le résultat le plus clair. Les lignes sont nettes et fines. 
+
+Sur une image non-bruitée ces filtres donnent plus ou moins le même résultat une fois le seuil de détection correctement fixé.
+
+
+++Bruit impulsionnel++
+
+Ce bruit se traduit par des pixels noirs ou blancs répartis aléatoirement sur l'image.
+
+Pour ce test, plusieurs niveaux de bruits on été appliqué à l'image d'origine à l'aide de la fonction imnoise d'Octave. Cinq niveaux de bruits ont été générés avec une densité de bruit allant de 1% à 5%.
+
+Pour chaque niveau de bruit, les quatres filtres ont été appliqués.
+
+```
+img = imnoise(img, 'salt & pepper', i);
+```
+
++++Densité = 1%+++
+
+[results/saltAndPepper/noise_001.jpg]
+--------------------
+
+[results/saltAndPepper/canny001.jpg] [results/saltAndPepper/prewitt001.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/saltAndPepper/sobel001.jpg] [results/saltAndPepper/roberts001.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+Avec une densité de bruit de 1%, on arrive encore a distingué les contours avec tous les opérateurs.
+
+
++++Densité = 2%+++
+
+[results/saltAndPepper/noise_002.jpg]
+--------------------
+
+[results/saltAndPepper/canny002.jpg] [results/saltAndPepper/prewitt002.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/saltAndPepper/sobel002.jpg] [results/saltAndPepper/roberts002.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+Avec une densité de bruit de 2%, les filtres Prewitt et Kirsch ne permettent plus de distinguer nettement les contours.
+
+
++++Densité = 3%+++
+
+[results/saltAndPepper/noise_003.jpg]
+--------------------
+
+[results/saltAndPepper/canny003.jpg] [results/saltAndPepper/prewitt003.jpg] 
+
+**Canny / Prewitt**
+--------------------
+
+[results/saltAndPepper/sobel003.jpg] [results/saltAndPepper/roberts003.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+A partir de 3% de bruit on voit apparaître une nette différence entre Canny et les autres filtres. Alors que Canny semble très résistant au bruit, on ne distingue pratiquement plus les contours avec Sobel, Prewitt et Roberts.
+
+
++++Densité = 4%+++
+
+[results/saltAndPepper/noise_004.jpg]
+
+--------------------
+
+[results/saltAndPepper/canny004.jpg] [results/saltAndPepper/prewitt004.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/saltAndPepper/sobel004.jpg] [results/saltAndPepper/roberts004.jpg]
+
+
+**Sobel / Roberts**
+--------------------
+
+Avec une densité de bruit de 4%, seul Canny permet de distinguer les contours assez nettement.
+
+
++++Densité = 5%+++
+
+[results/saltAndPepper/noise_005.jpg]
+
+--------------------
+
+[results/saltAndPepper/canny005.jpg] [results/saltAndPepper/prewitt005.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/saltAndPepper/sobel005.jpg] [results/saltAndPepper/roberts005.jpg]
+
+
+**Sobel / Roberts**
+--------------------
+
+++Résultats++
+
+Le résultat est clair, l'opérateur Canny permet d'obtenir un résultat utilisable malgré le bruit tandis que les autres filtres donnent un résultat à peine cohérent. Canny a été conçu pour fonctionner malgré le bruit. La première étape de l'algorithme consiste justement à éliminer le bruit. Canny suit trois principes:
+
++ bonne détection : faible taux d'erreur dans la signalisation des contours,
++ bonne localisation : minimisation des distances entre les contours détectés et les contours réels,
++ clarté de la réponse : une seule réponse par contour et pas de faux positifs
+
+
+L'opérateur Canny semble donc tenir ses promesses puisqu'il est le seul à donner un résultat correcte avec un bruit assez conséquent. En revanche l'opérateur Prewitt est très sensible au bruit et devient rapidement inutilisable.
+
+
+++Bruit gaussien++
+
+Ce bruit se traduit par un flou globale de l'image.
+
+La méthode utilisée est la même que pour le bruit implusionnel. J'ai utilisé la fonction imnoise d'Octave avec une moyenne à 0 et en faisant varier la variance entre 0.002 et 0.01.
+
+```
+img = imnoise(img, 'gaussian', 0, i);
+```
+
++++Variance = 0.002+++
+
+[results/gaussian/noise_0002.jpg]
+
+--------------------
+
+[results/gaussian/canny0002.jpg] [results/gaussian/prewitt0002.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/gaussian/sobel0002.jpg] [results/gaussian/roberts0002.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+
+Le filtre Roberts est très sensible au bruit gaussien, même avec un faible bruit.
+
+
++++Variance = 0.004+++
+
+[results/gaussian/noise_0004.jpg]
+
+--------------------
+
+[results/gaussian/canny0004.jpg] [results/gaussian/prewitt0004.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/gaussian/sobel0004.jpg] [results/gaussian/roberts0004.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+Ici le résultat est encore plus marquant qu'avec le bruit impulsionnel. La qualité du résultat se dégrade fortement pour tous les opérateurs excepté le Canny.
+
+
++++Variance = 0.006+++
+
+[results/gaussian/noise_0006.jpg]
+
+--------------------
+
+[results/gaussian/canny0006.jpg] [results/gaussian/prewitt0006.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/gaussian/sobel0006.jpg] [results/gaussian/roberts0006.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+A partir de 0.006, les filtres Sobel, Prewitt et Kirsch sont totalement inefficaces.
+
+
++++Variance = 0.008+++
+
+
+[results/gaussian/noise_0008.jpg]
+
+--------------------
+
+[results/gaussian/canny0008.jpg] [results/gaussian/prewitt0008.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/gaussian/sobel0008.jpg] [results/gaussian/roberts0008.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+De même, seul l'opérateur Canny permet d'obtenir un résultant utilisable.
+
+
++++Variance = 0.01+++
+
+[results/gaussian/noise_0006.jpg]
+
+--------------------
+
+[results/gaussian/canny001.jpg] [results/gaussian/prewitt001.jpg]
+
+**Canny / Prewitt**
+--------------------
+
+[results/gaussian/sobel001.jpg] [results/gaussian/roberts001.jpg]
+
+**Sobel / Roberts**
+--------------------
+
+++Résultats++
+
+Le différence est encore plus visible qu'avec le bruit impulsionnel. On observe que l'opérateur Canny résiste effectivement très bien au bruit, qu'il soit impulsionnel ou gaussien. Tous les autres filtres sont rapidement inutilisables si l'image est légèrement bruité, alors même que notre oeil peu aisément distingué les objets qui la compose.
+
+
++Segmentation+
+
+La segmentation est une opération de traitement d'image qui consiste à classer les pixels en **régions** à partir de critères pré-définis. Cela permet par exemple de séparer des objets du fond de l'image ou bien de découper une image en plusieurs parties en suivant des règles précises.
+
+
+++Contours++
+
++++Contours Actifs+++
+
+Le premier algorithme permettant de mettre en évidence les contours d'objets sur une image est appelé contours actifs. On créer plusieurs points, souvent arrangés sous la forme d'un cercle au centre de l'image. On fait ensuite bouger les points en leur appliquant des forces.
+
+On associe à chaque point plusieurs forces:
+
+- La force interne attire les points entre-eux et garantie la cohésion de la forme d'origine. Elle a tendance à faire se rétrécir le cercle d'origine sur son centre.
+- La force externe est la celle qui attire le point vers le bord d'un objet de l'image.
+
+Une implémentation efficace de cet algorithme utilise un Gradient Vector Flow. 
+
++ La première chose à faire est de faire ressortir les contours de l'image avec un filtre comme Sobel ou Canny à l'aide d'un seuil.
++ On calcule ensuite pour chaque point de l'image la distance au contour le proche.
+ + On calcule la distance entre chaque point où 
+```
+	di = di-1 - di+1
+```
+ + On calcule la force interne
+```
+	Finti = di-1 - di+1
+```
+ + On calcule la force externe par rapport à la normale du point. La force externe doit amener le point vers le contours le plus proche, plus ou moins fort en fonction de la distance. Pour cela on utilise la carte des distances calculée précédemment.
+```
+	Fexti = distance[(Pi + normale).xy]
+	if(distance[(Pi - normale).xy] > F)
+	    Fexti = -distance[(Pi - normale).xy]
+```
+ + La force résultante est la somme des forces : Fi = Finti + Fexti
+ + Tant que les points bougent, revenir en 2
+
+
+j'ai implémenté cet algorithme ici: https://github.com/razlock/image_activeContours
+
+
+[results/contours/lenaAC.png]
+
+[results/contours/boatAC.png]
+
+On peut voir qu'il n'est pas très efficace sur des images complexes.
+
+
++++Chan and Vese+++
+
+Cet algorithme est beaucoup plus rapide et peut être utilisé dans une application temps réel. Il est aussi plus efficace sur des images complexes.
+
+Cette algorithme se base sur la moyenne des couleurs à l'intérieur des contours et la moyenne à l'extérieur des contours. Les contours vont s'adpater à l'image de façon à minimiser la différence de couleurs entre chaque pixels à l'intérieur et à l'extérieur du contour.
+
+
+J'ai implémenté cet algorithme ici: https://github.com/razlock/image_ChanVese
+
+[results/contours/sampleCV.png]
+
+On peut constater que cet algorithme donne de bien meilleurs résultats sur des images complexes.
+
+
+++Régions++
+
+Il existe de nombreux algorithmes permettant de découper une image en régions. Deux algorithmes simples sont la segmentation par division et l'algorithme de division et fusion.
+
++++Divisions+++
+
+Dans le premier cas, on peut partir d'une seule région.
+
++ Tant qu'il y a de nouveaux découpages
+ + Pour chaque régions
+  + Si les pixels à l'intérieur de la région sont différents alors on divisie la région en 4 parts égales (plusieurs méthodes peuvent être utilisées pour comparer les pixels)
++ Revenir en 1
+
+
++++Fusion+++
+
+Dans le deuxième cas on considère une région par pixel.
+
++ Tant qu'il y a de nouvelles fusions
+ + Pour chaque région
+  + Pour chaque région voisine
+   + Si la différence entre les deux régions est inférieur à un certain seuil, on les fusionne
++ Revenir en 1
+
+
++++Division et fusion+++
+
+Ce dernier algorithme est le résultat d'une division et d'une fusion. La division donne une structure hiérarchisée et qui permet d’établir des relations de proximité entre les régions, mais qui peut fractionner une même région en plusieurs ensembles distincts. La segmentation par fusion produit un nombre minimal de régions connexes, mais fournit celles-ci dans une structure horizontale qui n’indique pas de relation de proximité.
+
+En appliquant une fusion après une division on va pouvoir fusionner des régions adjacentes qui ne pouvaient pas être mises en évidences avec la seule division. Cette dernière technique permet d'obtenir de meilleurs résultats.

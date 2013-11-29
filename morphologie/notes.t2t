@@ -1,0 +1,155 @@
+Imagerie Opérationnelle -- Morphologie Mathématique
+Cavelan Aurélien
+%%mtime(%d/%m/%Y)
+%!Encoding: utf-8
+%!options: -n --toc
+%!style(tex): notes.sty
+
+
++Objectifs+
+
+Le but de ce TP est de détecter les différents grains de riz et les différents chromosomes sur les deux images ci-dessous. Afin de répondre aux questions j'ai utilisé Octave (clone libre de Matlab). Je donnerai à chaque fois les fonctions et les paramètres utilisés.
+
+
++Histogrammes+
+
+++Niveaux de gris++
+
+L'histogramme est obtenu à partir de l'image en niveaux de gris via la fonction ``imhist(Image)``
+
+[results/histo.jpg]
+--------------------
+**Image en niveaus de gris, histogramme**
+
+Ci-dessus l'image contenant les grains de riz et celle contenant les chromosomes ainsi que les histogrammes associés. 
+
+On peut observer différents niveaux de contrastes sur ces images et cela se traduit par plusieurs pics sur les histogrammes. De plus les valeurs ne sont pas équitablement réparties sur toute la plage tonale disponible.
+
+Ces défauts peuvent empêcher les objets d'être correctement détectés. Un grain de riz qui se trouve en bas de l'image a sensiblement la même couleur que le fond de l'image sur la partie supérieure par exemple.
+
+
+++Renforcement du contraste++
+
+Afin d'avoir un contour plus net entre les objets et le fond de l'image, il est intéressant d'en augmenter le contraste.
+
+La formule donnée se traduit en code Octave par:
+```
+I = 255 * (I - min(min(I)));
+I = I ./ (max(max(I)) - min(min(I)));
+```
+
+[results/equalization.jpg]
+--------------------
+**Constraste renforcé**
+
+Cette opération est moins destructrice qu'une égalisation pure et simple de l'histogramme (élimination des pics). Les différences de couleurs qui existaient auparavant sont renforcées.
+
+
+++Binarisation++
+
+Ces deux images sont composées toutes les deux d'un fond gris / noir et d'objets plus clairs. Maintenant que les images ont été pré-traitées il est possible d'effectuer une binarisation sans craindre de perdre de l'information.
+
+La binarisation se fait à l'aide de la fonction ``im2bw(Image, Seuil)``. Le seuil peut être obtenu de manière automatique, à partir de l'histogramme ou en utilisant la fonction ``graythresh(Image)`` par exemple. Mais dans le cas des grains de riz, comme l'histogramme possède plusieurs maximums il est plus efficace de déterminer le seuil visuellement. Ici une valeur entre 0.45 et 0.5 permet de conserver tous les grains de riz sans ajouter trop points blancs.
+
+[results/binarisation.jpg]
+--------------------
+**Image avant et après binarisation**
+
+On peut maintenant dire de façon automatique si un pixel appartient fond de l'image (en noir) ou bien à un objet qui la compose (en blanc). En revanche il reste des points blancs sur l'image et certains grains de riz ou chromosomes se superposent, ce qui rend le comptage des objets difficile.
+
+
++Opérations morphologiques+
+
+Afin de supprimer les trous et les points blancs isolés sur les images binarisées on peut utiliser une //ouverture//. L'ouverture est composée dans un premier temps d'une //érosion// qui a pour effet de réduire la taille des objets (de les éroder). Les points disparaissent complètement tandis que les objets qui nous intéressent, plus gros, restent visiblent. Dans un deuxième on effectue une dilatation qui fait grossir les objets et leur rend leur taille d'origine.
+
+Les chromosomes sont composées de plusieurs bras rattachés au niveau du centromère. Sur cette image, ce détail est à peine visible et un seul chromosome peut être compté deux fois. C'est pourquoi on peut utiliser une //fermeture//, c'est à dire une //dilatation// suivie d'une //érosion//  qui a pour effet de faire grossir les chromosomes de sorte que plusieurs morceaux d'un même chromosomes se touchent à nouveau visuellement.
+
+Les fonctions utilisées sont:
+```
+imerode(Image, Filtre)
+imdilate(Image, Filtre)
+```
+
+Le filtre utilisé est un filtre carré de taille 3x3 défini comme suit:
+
+```
+1 1 1
+1 0 1
+1 1 1
+```
+
+[results/morpho.jpg]
+
+
++Etiquetage+
+
+L'image a été binarisée et les trous ont été éliminés. La fonction ``bwlabel(Image)`` d'Octave permet d'étiqueter les objets sur l'image. Elle renvoit une matrice de la taille de l'image contenant à la place de chaque le numéro de l'objet correspondant ou 0 pour le fond.
+
+Cette fonction renvoie **91** pour le nombre de grains de riz et **59** pour le nombre de chromosomes.
+
+La fonction ``regionprops(ImageLabelisée, Critère)`` permet d'exploiter le résultat de ``bwlabel``. On peut notamment obtenir l'air de chaque objet ainsi que son périmètre. On peut ensuite calculer la compacité de chaque objets.
+
+```
+areaList = regionprops(labels, 'area');
+perimeterList = regionprops(labels, 'perimeter');
+
+for i=1:size(areaList)(2)
+	a = areaList(1, i).Area;
+	p = perimeterList(1, i).Perimeter;
+	compacite = (4 * pi * a) / p;
+end;
+```
+
+Voici un exemple des résultats obtenus:
+```
+Grain 1, aire = 52, périmètre = 24, compacité = 27
+Grain 2, aire = 95, périmètre = 36, compacité = 33
+Grain 3, aire = 58, périmètre = 24, compacité = 30
+Grain 4, aire = 120, périmètre = 38, compacité = 39
+Grain 5, aire = 207, périmètre = 54, compacité = 48
+Grain 6, aire = 135, périmètre = 40, compacité = 42
+Grain 7, aire = 192, périmètre = 57, compacité = 42
+Grain 8, aire = 126, périmètre = 42, compacité = 37
+Grain 9, aire = 203, périmètre = 52, compacité = 49
+Grain 10, aire = 152, périmètre = 45, compacité = 42
+```
+
+```
+Chromosome 1, aire = 263, périmètre = 62, compacité = 53
+Chromosome 2, aire = 230, périmètre = 55, compacité = 52
+Chromosome 3, aire = 926, périmètre = 173, compacité = 67
+Chromosome 4, aire = 2018, périmètre = 375, compacité = 67
+Chromosome 5, aire = 650, périmètre = 109, compacité = 74
+Chromosome 6, aire = 61, périmètre = 28, compacité = 27
+Chromosome 7, aire = 1188, périmètre = 250, compacité = 59
+Chromosome 8, aire = 1037, périmètre = 239, compacité = 54
+Chromosome 9, aire = 819, périmètre = 192, compacité = 53
+Chromosome 10, aire = 643, périmètre = 154, compacité = 52
+```
+
+Il est évident que ces résultats ne sont pas parfaits mais les valaurs obtenues sont cohérentes. Les grains de rize se ressemblent fortement et les valeurs sont très proches tandis que certains chromosomes sont entiers et d'autres divisés en plusieurs parties distinctes. De plus certains objets se superposent et sont donc suceptibles d'être comptés comme un seul.
+
+
++Squelettisation+
+
+Il y a plusieurs façon de squelettiser l'image et Octave propose plusieurs types de squelettes.
+
+Le premier consiste à retirer des pixels aux objets mais sans les diviser.
+
+[results/skel.jpg]
+
+
+Le deuxième est plus radicale: les objets sont réduits au minimum, soit un point ou un anneau si l'objet est troué (ou si deux chromosomes sont attachés par exemples).
+
+[results/skel_shrink.jpg]
+
+
+Le dernier squlette intéressant est à mis chemin entre les deux autres. Il conserve la taille des objets et les réduits à de simple lignes ou bien à des anneaux si ceux-ci sont troués.
+
+[results/skel_thin.jpg]
+
+Tous ces squelettes préservent le nombre d'Euler. On distingue nettement des anneaux sur l'image des chromosomes. En effet ce sont des objets plus complexes et il est difficile de distinguer deux parties d'un même chromosome ou deux chromosomes distincts. On trouve entre 40 et 65 objets en fonction de la tolérance au "morceaux".
+
+Sur l'image des grains de riz les deux derniers squelettes ne renvoient pratiquement que des points ou des lignes. Cela signifie qu'il n'y a presque pas de superpositions et que les traitements ont permis d'éliminer les faux-positifs ainsi que d'autres défauts de l'image. On peut en conclure que le nombre trouvé (environ 90) est précis et proche de la réalité.
+
+

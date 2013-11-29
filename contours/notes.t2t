@@ -1,0 +1,168 @@
+Imagerie Opérationnelle -- Contours / Watermarking
+Cavelan Aurélien
+%%mtime(%d/%m/%Y)
+%!Encoding: utf-8
+%!options: -n --toc
+%!style(tex): notes.sty
+
+
++Contours Actifs+
+
+++Objectifs++
+
+Un contour actif est un ensemble de points qu'on va tenter de déplacer pour lui faire épouser une forme. Il s'agit d'une technique d'extraction de données utilisée en traitement d'images. L'idée de cette méthode est de déplacer les points pour les rapprocher des zones de fort gradient tout en conservant des caractéristiques comme la courbure du contour ou la répartition des points sur le contour ou d'autres contraintes liées à la disposition des points.
+
+
+++Approche++
+
+Au démarrage de l'algorithme, le contour est disposé uniformément autour de l'objet à détourer puis il va se rétracter pour en épouser au mieux les formes. De la même manière, un contour actif peut aussi se dilater et tenter de remplir une forme, il sera alors situé à l'intérieur de celle-ci au démarrage de l'algorithme.
+
+Pour cela il existe différentes méthodes. La méthode que nous avons utilisé dans le cadre de ce PEA consiste à attribuer une force interne et une force externe à chaque points. La force interne garantie la cohésion de la forme et rapproche les points entre eux. La forme de base à tendance à se réduire vers son centre avec la seule force interne. La force externe attire un point vers un contours proche.
+
+Il faut commencer par extraire les contours de l'images à l'aide d'un opérateur comme Canny ou Sobel.
+
+Ensuite à chaque itération de l'algorithme on recalcule les forces pour obtenir la nouvelle position du point. Cela se fait en quatres grandes étapes:
+
+- Calculer la distance entre chaque point où ``di = di-1 - di+1``
+- Calculer la force interne où ``Finti = Finti-1 - Finti+1``
+- Calculer la force exterieur:
+ - Il faut calculer la force par rapport à la normale au point. On utilise pour cela les contours pré-calculés au début de l'algorithme. Une méthode simple est de faire une moyenne des contours le long de la normale (jusqu'à 20 pixels par exemple, de chaque côté du point), en fonction de la distance.
+ - La force externe est dirigée vers le maximum le long de cette normale. Cela permet
+- La nouvelle position du point est obtenue simplement via la somme des forces: 
+
+``Pi+1 = Pi + alpha * Finti + beta * Fexti``
+
+Où alpha et beta sont des coefficient multiplicateurs permettant de régler les forces.
+
+
+++Résultats++
+
+Pour obtenir de bons résultats il faudrait ajouter et retirer dynamiquement des points, et éventuellement utiliser d'autres forces (notamment diviser la force interne en plusieurs sous-forces).
+
+Pour obtenir de meilleurs résultats, la force direction de la force interne d'un point est moyennée avec ses N voisins précédants et ses N voisins suivants. Cela permet d'éviter un effet accordéon (réaction en chaîne) sur toute la forme.
+
+[squareAC.jpg] [cloverAC.jpg]
+
+--------------------
+
+
++Chan and Vese+
+
+++Objectifs++
+
+La méthode de Chan and Vese a pour but la détection de contours, ou d'objets, à l'intérieur d'une image. Cette méthode se base sur la différence de couleur entre l'intérieur et l'extérieur des contours. Si la différence de couleur entre les objets et le fond de l'image est forte alors l'algorithme va converger très rapidement. L'autre avantage de cet algorithme est qu'il nécessite beaucoup moins de paramétrage et qu'il pourra détecter plusieurs objets indépendants.
+
+
+++Approche++
+
+Cette méthode utilise une courbe de niveaux (Phi). Cette courbe de niveau correspond s'obitent en calculant pour chaque point sa distance par rapport au contour le plus proche. Le plus souvent on choisi de démarrer l'algorithme avec une forme simple, comme un cercle.
+
+Ainsi la courbe de niveau à l'initialisation est constituée de cercles concentriques s'éloignant du centre de l'image (et du centre du cercle). La deuxième chose à faire est de déterminer si un point se trouve à l'intérieur ou à l'extérieur du motif. Dans le cas d'un cercle de centre O et de rayon r, il suffit de calculer Phi(x,y) tel que:
+
+``Phi(x,y) = distance(x, y, Ox, Oy) - r``
+
+Ainsi:
+- Phi < 0 implique que le point se trouve à l'extérieur du motif.
+- Phi >= 0 omplique que le point se trouve à l'intérieur du motif.
+
+Les contours peuvent être extrait en cherchant tous les points de coordonnés x et y tel que Phi(x,y) > 0 et qui possède un voisin immédiat de coordonnés i et j tel que Phi(i,j) < 0.
+
+Une fois que Phi a été initialisé, il suffit d'itérer l'algorithme tant que les contours se déplacent:
+
+- Calculer la moyenne C1 des couleurs à l'intérieur des contours (i.e Phi >= 0)
+- Calculer la moyenne C2 des couleurs à l'iextérieur des contours (i.e Phi < 0)
+- Mettre à jour PHi où 
+
+``Phi(n+1) = Phi - V * ( -(I - C1)^2 + (I - C2)^2 )``
+
+Où V est un coeffient de vitesse (ex: 1.0f) et I est l'image.
+
+
+++Résultats++
+
+A chaque fois un cercle de taille moyenne à été placé au centre de l'image.
+
+[circles.jpg] [cloverCV.jpg]
+
+[many_cellsCV.jpg]
+
+Comme on peut le voir l'algorithme s'adapte très bien à des images complexes constituées de plusieurs dizaines d'objets.
+
+--------------------
+
+
++Tattouage Spatial+
+
+++Objectifs++
+
+Le tatouage consiste à ajouter de l'information à une image de manière visible ou invisible. L'objectif de ce TP est de "marquer" une image avec une suite aléatoire de -1 et de 1. Etant donnée une empreinte il doit être possible de détermine si une image a été marquée par cette empreinte ou non.
+
+On doit pouvoir faire varier la force de la marque en multipliant le bruit par une constante alpha. Le bruit doit être invisible, il faut donc trouver alpha tel que le rapport bruit / signal reste assez faible.
+
+
+++Approche++
+
+	 
+Etant donnée une empreinte **m**, une image **I** non marquée et une image **Iw** marquée, nous savons que:
+
+```
+E(I.m) = E(I).E(m) = 0
+```
+
+
+La marque **m** est une suite aléatoire de binaires **-1** ou **1**. L'espérance tend donc vers 0.
+
+```
+E(Iw.m) = E((I.m) + alpha * E(m^2)
+		= alpha
+```
+
+De même ici pour E(I.m). De plus E(m^2) vaut exactement 1 puisque (-1)^2 = 1^2 = 1.
+
+Supposons que l'image en entrée soit marquée, alors on obtient alpha, la force de la marque. Si l'image n'est pas marquée alors E(I.m) tend vers 0.
+
+On peut donc déterminer si l'image est marqué de deux façon:
+
+- Si alpha >= 1 - S, S un seuil (i.e 0.5) alors l'image est marquée.
+- Si étant donné alpha on a E(I.m) > (alpha / 2) alors l'image est marquée.
+- Sinon l'image n'est pas marquée.
+
+
+++Résultats++
+
+Le bruit est pratiquement invisible avec un alpha inférieur à 10 (SNR > 30)
+
+[lena10.jpg] [lena15.jpg]
+**alpha = 10, alpha = 15**
+
+alpha = 5 semble être un choix judicieux car le bruit est très peu visible et la marque est facilement détectable. Cette méthode fonctionne bien même avec un alpha = 1, l'algorithme de détection a très peu de chance de se tromper (la probabilité qu'il se trompe est quasiment nulle si alpha > 1).
+
+
++Tattouage Fréquentiel+
+
+++Objectifs++
+
+Le tattouage spatial est très sensible aux //attaques// et il est impossible de détecter la //marque// si l'image a subie un agrandissement, un rétrécissement ou bien une rotation. Un exemple d'//attaque// simple est l'impression puis la numérisation d'une image, autremement appelées attaques //print scan//.
+
+Lorsqu'on travail dans le domaine fréquentiel, on est beaucoup moins sensible aux petites modifications de l'image ainsi qu'aux rotations. Le but de ce TP est de marquer une image dans le domaine fréquentiel en utilisant la transformation de Fourier. La Fast Fourier Transform (FFT) permet de passer rapidement une image dans le domaine fréquentiel.
+
+
+++Approche++
+
+J'ai utilisé la bibliothèque fftw3, développé à l'origine par le MIT et qui fournit une implémentation très rapide de la FFT. Une fois la transformée obtenue il est possible de récupérer le module et la phase. On peut alors imprimer une couronne dans les moyennes fréquences sur le module (cf résultats).
+
+Le calcul de l'auto-corrélation est le même que pour le tattouage spatial (on la calcule seulement à l'interrieur de la couronne).
+
+
+++Résultats++
+
+La marque est beaucoup moins visible, il faut donc marquer beaucoup plus fort pour qu'elle soit visible. On peut calculer le SNR (rapport signal à bruit).
+
+| alpha | 1000 | 2000 | 5000 | 10000 | 20000 |
+| SNR | 45 | 38 | 31 | 25 | 19 |
+
+Il faut un alpha >= 1000 pour pouvoir détecter correctement la marque avec la méthode de l'auto-corrélation. La marque devient légèrement visible avec un alpha >= 3000.
+
+[fft10000.jpg]
+
+**alpha=10000**
