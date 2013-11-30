@@ -60,42 +60,43 @@ U = U / norm(U);
 #imagesc(reshape(G, 300, 240));
 #title(strcat('average face'));
 
-figure;
-colormap(gray);
-for i=1:14
-	subplot(4,4,i);
-	imagesc(reshape(U(:,i), 300, 240));
-	title(strcat('eigenface ', num2str(i)));
-end;
+#figure;
+#colormap(gray);
+#for i=1:14
+#	subplot(4,4,i);
+#	imagesc(reshape(U(:,i), 300, 240));
+#	title(strcat('eigenface ', num2str(i)));
+#end;
 
 
-# 3 - Reconstruction des visages de la base de données à partir des eigenface
+# 3 - Reconstructedion des visages de la base de données à partir des eigenface
 #===============================================================================
 
 C = Xtilde * U;
 
-Rebuild = zeros(N, 300*240);
+Reconstructed = zeros(N, 300*240);
 
 for i=1:14
 	for j=1:14
-		Rebuild(i,:) += C(i,j) * U(:,j)';
+		Reconstructed(i,:) += C(i,j) * U(:,j)';
 	end;
-	Rebuild(i,:) += G';
+	Reconstructed(i,:) += G';
 end;
 
-ErrorRef = zeros(N, 1);
+ErrorBase = zeros(N, 1);
 for j=1:14
-    for i=1:300*240
-        ErrorRef(j) = ErrorRef(j) + (M(j, i) - Rebuild(j,i))^2;
-    end
-    ErrorRef(j) = sqrt(ErrorRef(j));
+    ErrorBase(j) = sum((M(j,:) - Reconstructed(j,:)).^2);
+    ErrorBase(j) = sqrt(ErrorBase(j));
+    printf("Error for reconstructed face %d is %d\n", j, ErrorBase(j));
 end
+ErrorBaseMean = mean(ErrorBase);
+printf("Mean error is %d\n", ErrorBaseMean);
 
 #figure;
 #colormap(gray);
 #for i=1:14
 #	subplot(4,4,i);
-#	I = reshape(Rebuild(i,:), 300, 240);
+#	I = reshape(Reconstructed(i,:), 300, 240);
 #	imagesc(I);
 #end;
 
