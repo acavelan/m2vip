@@ -3,31 +3,99 @@ pkg load image;
 clear all;
 close all;
 
-I = imread("photos/ph1.jpg");
-I = rgb2gray(I);
-I = double(I);
-I = reshape(I, 1, 240*300);
+N = 14;
 
-X = I;
 
-for i=2:14,
+# 1 - Construction de la matrice des données
+#===============================================================================
+
+M = zeros(N, 300*240);
+
+for i=1:N,
 	I = imread(strcat("photos/ph", num2str(i), ".jpg"));
 	I = double(I);
 	I = rgb2gray(I);
 	I = reshape(I, 1, 240*300);
-	X = cat(1, X, I);
+	M(i,:) = I;
 end;
 
-G = mean(X)';
+# Calcule du centre de gravité (moyenne des images)
+G = mean(M)';
 
-#Gr = reshape(G, 300, 240);
+# On recentre les image par rapport à G
+Xtilde = M - ones(N, 1) * G';
 
-Xtilde = X - ones(14, 1) .* G';
-size(Xtilde)
 
-L = (Xtilde * Xtilde') / 14;
-size(L)
+# 2 - Recherche des eigenface
+#===============================================================================
 
-[V,lambda] = sort(eig(L), 'descend');
+# Calcule des vecteurs propres de L
+L = (Xtilde * Xtilde') / N;
 
+[V D] = eig(full(L));
+
+# Sort eigenvectors in decsending order of eigenvalues
+[D order] = sort(diag(D),'descend');
+V = V(:,order);
+
+# Calcule des vecteurs propres de M
+U = Xtilde' * V;
+
+# U: Vecteurs propres de M en fonction de L.
+# U: N eigenface
+# Normalisation de U
+U = U / norm(U);
+
+#figure;
+#colormap(gray);
+#for i=1:14
+#	subplot(4,4,i);
+#	I = reshape(M(i,:), 300, 240);
+#	imagesc(I);
+#end;
+
+#figure;
+#colormap(gray);
+#subplot(1, 1, 1);
+#imagesc(reshape(G, 300, 240));
+#title(strcat('average face'));
+
+figure;
+colormap(gray);
+for i=1:14
+	subplot(4,4,i);
+	imagesc(reshape(U(:,i), 300, 240));
+	title(strcat('eigenface ', num2str(i)));
+end;
+
+
+# 3 - Reconstruction des visages de la base de données à partir des eigenface
+#===============================================================================
+
+C = Xtilde * U;
+
+Rebuild = zeros(N, 300*240);
+
+for i=1:14
+	for j=1:14
+		Rebuild(i,:) += C(i,j) * U(:,j)';
+	end;
+	Rebuild(i,:) += G';
+end;
+
+ErrorRef = zeros(N, 1);
+for j=1:14
+    for i=1:300*240
+        ErrorRef(j) = ErrorRef(j) + (M(j, i) - Rebuild(j,i))^2;
+    end
+    ErrorRef(j) = sqrt(ErrorRef(j));
+end
+
+#figure;
+#colormap(gray);
+#for i=1:14
+#	subplot(4,4,i);
+#	I = reshape(Rebuild(i,:), 300, 240);
+#	imagesc(I);
+#end;
 
