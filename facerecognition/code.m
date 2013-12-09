@@ -5,7 +5,6 @@ close all;
 
 N = 14;
 Me = 12;
-MaxDiff = 12000;
 NewFaceFile = "other/lena.jpg";
 
 # 1 - Construction de la matrice des données
@@ -17,7 +16,7 @@ for i=1:N,
     I = imread(strcat("photos/ph", num2str(i), ".jpg"));
     I = rgb2gray(I);
     I = double(I);
-    I = reshape(I, 1, 240*300);
+    I = reshape(I, 240*300, 1);
     M(i,:) = I;
 end;
 
@@ -32,7 +31,7 @@ Xtilde = M - ones(N, 1) * G';
 #===============================================================================
 
 # Calcule des vecteurs propres de L
-L = (Xtilde * Xtilde') / N;
+L = (Xtilde * Xtilde') / (240*300);
 
 [V D] = eig(full(L));
 
@@ -46,7 +45,9 @@ U = Xtilde' * V;
 # U: Vecteurs propres de M en fonction de L.
 # U: N eigenface
 # Normalisation de U
-U = U / norm(U);
+for i=1:N
+    U(:,i) = U(:,i) ./ norm(U(:,i));
+end
 
 figure;
 colormap(gray);
@@ -133,7 +134,7 @@ ErrorNewFace = sqrt(ErrorNewFace);
 printf("Confronting %s to the database:\n", NewFaceFile);
 printf("\tError for the new reconstructed face is %d\n", ErrorNewFace);
 
-if ErrorNewFace > MaxDiff
+if ErrorNewFace > ErrorBaseMean * 2
     printf("\tRESULT: %s is not part of the database\n", NewFaceFile);
 else
     printf("\tRESULT: %s is part of the database !\n", NewFaceFile);
