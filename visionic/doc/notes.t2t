@@ -1,0 +1,255 @@
+Imagerie Opérationnelle -- Reconstruction 3D
+Cavelan Aurélien
+%%mtime(%d/%m/%Y)
+%!Encoding: utf-8
+%!options: -n --toc
+%!style(tex): notes.sty
+
++TD1+
+
+++Scène 3D et caméras++
+
+Après avoir chargé les points 3D on obtient la matrice suivante:
+```
+    Pts3D =
+
+    0.00000  2.50000  5.00000  0.00000 -5.00000 -2.50000  0.00000  2.50000 -2.50000  0.00000
+    4.08248  4.08248  4.08248  4.08248  4.08248  4.08248  0.00000  0.00000  0.00000 -4.08248
+   10.00000 14.33013 18.66025 18.66025 18.66025 14.33013 12.88675 17.21688 17.21688 15.77350
+    1.00000  1.00000  1.00000  1.00000  1.00000  1.00000  1.00000  1.00000  1.00000  1.00000
+```
+
+Cette matrice est formée d'une liste de point où chaque colonne correspond à un point.
+```
+    Point = [X
+             Y
+             Z
+             1]
+```
+
+On place les deux caméras dans la scène et on affiche les points:
+```
+    # Matrice de rotation R et le vecteur de translation t des caméras
+    R1 = eye(3);
+    t1 = [0; 0; 0];
+
+    [R2, t2] = PlaceCamera([20, 0, 4], [0, 0, 16], [0, 1, 0]);
+
+    R = cat(3, R1, R2);
+    t = cat(2, t1, t2);
+
+    DrawCamera(R1, t1, 5.0);
+    DrawCamera(R2, t2, 5.0);
+    Show3DScene(Pts3D, R, t, 0);
+```
+
+[images/3Dscene.jpg]
+
+
+++Formation des images++
+
++++Changement de repères+++
+
+On calcul les matrices de changement de repères:
+```
+    # Matrices de changement de repère
+    T1 = [R1, R1*t1; [0, 0, 0, 1]];
+    T2 = [R2, R2*t2; [0, 0, 0, 1]];
+
+    T2 =
+        0.51450   -0.00000    0.85749  -13.71989
+        0.00000    1.00000    0.00000    0.00000
+       -0.85749    0.00000    0.51450   15.09188
+        0.00000    0.00000    0.00000    1.00000
+```
+
+
++++Matrice de calibrage+++
+
+Les facteurs d'échelle ku et kv correspondent au nombre de pixels par mm sur le 
+capteur CDD. On a donc:
+```
+    # CCD 640 * 480 px, capteur 4 * 3 mm
+    ku = 640 / 4;
+    kv = 480 / 3;
+
+    u0 = 640 / 2;
+    v0 = 480 / 2;
+
+    f = 3.75;
+
+    # Matrice de calibrage A
+    A = [f * ku, 0, u0; 0, f * kv, v0; 0, 0, 1];
+
+    A =
+       600     0   320
+         0   600   240
+         0     0     1
+```
+
+Lorsque les pixels sont carrés, on remarque que ku = kv.
+
+
++++Matrice de projection+++
+
+Calcul des matrices de projections:
+
+```
+    # Matrices de projections des caméras
+    P1 = [A [0; 0; 0]] * T1;
+    P2 = [A [0; 0; 0]] * T2;
+
+    P1 =
+       600     0   320     0
+         0   600   240     0
+         0     0     1     0
+     
+    P2 =
+       3.4300e+01   0.0000e+00   6.7913e+02  -3.4025e+03
+      -2.0580e+02   6.0000e+02   1.2348e+02   3.6221e+03
+      -8.5749e-01   0.0000e+00   5.1450e-01   1.5092e+01
+```
+
+Calcul des coordonnées en pixels des projections de chacun des points du tétraèdre sur les deux images.
+```
+    # Projection des points 3D
+    m1 = P1 * Pts3D;
+    m2 = P2 * Pts3D;
+
+    m1 = m1 ./ [m1(3,:); m1(3,:); m1(3,:)];
+    m2 = m2 ./ [m2(3,:); m2(3,:); m2(3,:)];
+
+    IM1 = CreateImage(m1);
+    IM2 = CreateImage(m2);
+```
+
+[images/IMC1.jpg]
+
+[images/IMC2.jpg]
+
+
+++Géométrie épipolaire++
+
+Afin de calculer la matrice fondamentale F il est nécessaire de transformer le vecteur translation de la deuxième caméra en matrice 3x3. On utilise pour cela la transformation suivante:
+```
+    (-20) x1      (  0  -x3    x2)
+    (  0) x2  ->  ( x3    0   -x1)
+    (-4)  x3      (-x2   x1     0)
+```
+
+On peut ensuite calculer F:
+```
+    t2 = [0,4,0;-4,0,20;0,-20,0];
+
+    E = R2 * t2;
+    F = inv(A') * E * inv(A);
+    
+    F =
+       0.00000  -0.00004   0.01006
+      -0.00001   0.00000   0.03689
+       0.00267  -0.00945  -6.58498
+```
+
+
++TD2+
+
+++Estimation de la matrice fondamentale++
+
+Estimation de la matrice fondamentale à l'aide de la méthode des 8 points:
+```
+    Fest = ComputeF(m1, m2, 7, 1);
+    
+    Fest =
+      -0.00000  -0.00001   0.00315
+      -0.00000   0.00000   0.01156
+       0.00084  -0.00296  -2.06395
+   
+    # Facteur d'échelle
+    scalef = F ./ Fest;
+    
+    scalef =
+      -0.00000   3.19048   3.19048
+       3.19048       NaN   3.19048
+       3.19048   3.19048   3.19048
+```
+
+La matrice Fest obtenue est donc parcaitement identique à la matrice d'origin à un facteur d'échelle 3.19.
+
+
+++Estimation des paramètres intrinsèques++
+
+Estimation de la matrice de calibrage:
+```
+    Aest = [-1, 0, 640/2; 0, -1, 480/2; 0, 0, 1];
+
+    # A = Aest !
+    Aest = SelfCalibrate(Fest, Aest);
+    
+    A =
+       600     0   320
+         0   600   240
+         0     0     1
+
+    Aest =
+       600.00000     0.00000   320.00000
+         0.00000   600.00000   240.00000
+         0.00000     0.00000     1.00000
+```
+
+La matrice A estimée est également identique à la matrice A "idéale".
+
+
+++Estimation des paramètres extrinsèques++
+
+On peut maintenant estimer la matrice essentielle de la façon suivante: ``Est = Aest' * Fest * Aest;``
+
+La fonction DecomposeTransform permet de décomposer la matrice essentielle afin de retrouver la matrice de translation et la matrice de rotation.
+
+```
+    [T21, T22, R21, R22] = DecomposeTransform(Est);
+```
+
+++Reconstruction 3D par triangulation++
+
+Comme la décomposition de la matrice essentielle n'est pas unique il existe quatre matrices de projection possibles. La fonction triangulation permet de retrouver les points 3D à partir des matrices de projection de la caméra 1 et 2. Sachant que la caméra 1 se trouve à l'ogine du repère, il faut chercher la bonne matrice de projection pour la caméra 2.
+
+Voici les quatres matrices de points obtenues pour chaque matrice de projection de la caméra 2 possible.
+
+```
+    # Estimation de la matrice de projection P1
+    R1est = eye(3);
+    t1est = [0; 0; 0];
+
+    T1est = [R1est, R1est*t1est; [0, 0, 0, 1]];
+    P1est = [Aest [0; 0; 0]] * T1est;
+
+    # Estimation des matrices de projection de P2
+    t21 = [T21(2,3); -T21(1,3); T21(1,2)];
+    t22 = [T22(2,3); -T22(1,3); T22(1,2)];
+
+    T11 = [R21, R21*t21; [0, 0, 0, 1]];
+    T12 = [R21, R21*t22; [0, 0, 0, 1]];
+    T21 = [R22, R22*t21; [0, 0, 0, 1]];
+    T22 = [R22, R22*t22; [0, 0, 0, 1]];
+
+    P11 = [Aest [0; 0; 0]] * T11;
+    P12 = [Aest [0; 0; 0]] * T12;
+    P21 = [Aest [0; 0; 0]] * T21;
+    P22 = [Aest [0; 0; 0]] * T22;
+
+    # Reconstruction par triangulation
+    M11 = Triangulation(m1, m2, P1est, P11);
+    M12 = Triangulation(m1, m2, P1est, P12);
+    M21 = Triangulation(m1, m2, P1est, P21);
+    M22 = Triangulation(m1, m2, P1est, P22);
+```
+
+**On observe que la matrice de projection P22 permet de retrouver les points d'origines.**
+
+[images/P11.jpg]
+
+[images/P12.jpg]
+
+[images/P21.jpg]
+
+[images/P22.jpg]

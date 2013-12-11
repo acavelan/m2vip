@@ -45,11 +45,8 @@ P2 = [A [0; 0; 0]] * T2;
 m1 = P1 * Pts3D;
 m2 = P2 * Pts3D;
 
-m1 = m1(1:2,:) ./ m1(3,:);
-m2 = m2(1:2,:) ./ m2(3,:);
-
-m1(3,:) = 1;
-m1(3,:) = 1;
+m1 = m1 ./ [m1(3,:); m1(3,:); m1(3,:)];
+m2 = m2 ./ [m2(3,:); m2(3,:); m2(3,:)];
 
 IM1 = CreateImage(m1);
 IM2 = CreateImage(m2);
@@ -62,7 +59,7 @@ image(IM2);
 
 # Calcule de la matrice fondamentale
 # (-20) x1      (0    -x3   x2)
-# ( 0)	x2	->  (x3    0   -x1)														( 0 ) x2 -> (x3    0   -x1)
+# ( 0)	x2	->  (x3    0   -x1)
 # (-4)  x3      (-x2   x1    0)
 
 t2 = [0,4,0;-4,0,20;0,-20,0];
@@ -149,3 +146,5 @@ t = cat(2, t1est, t22);
 
 Show3DScene(M22, R, t, 1);
 title("P22");
+
+#VerifierReconstruction([M11;M12;M21;M22], [640,480])
