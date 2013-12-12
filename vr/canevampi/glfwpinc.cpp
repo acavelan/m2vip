@@ -107,7 +107,7 @@ void onDraw(void)
     glLoadIdentity();
     
     glClear(GL_DEPTH_BUFFER_BIT);
-    glColorMask(GL_FALSE, GL_FALSE, GL_TRUE, GL_TRUE);
+    glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
     
     gluLookAt(0.1f + camX, camY, camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
     
@@ -214,9 +214,9 @@ int main(int argc, char **argv)
     window = glfwCreateWindow(width, height, "Demo", 0, 0);
     
     if(rank < 2)
-        glfwSetWindowPos(window, rank * width, 0);
+        glfwSetWindowPos(window, 50 + rank * width, 100);
     else                       
-        glfwSetWindowPos(window, (rank - 2) * width, height);
+        glfwSetWindowPos(window, 50 + (rank - 2) * width, 100 + height);
     
     if(rank == 0)
     {
