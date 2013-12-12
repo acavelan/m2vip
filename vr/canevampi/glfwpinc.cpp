@@ -216,7 +216,7 @@ int main(int argc, char **argv)
     if(rank < 2)
         glfwSetWindowPos(window, rank * width, 0);
     else                       
-        glfwSetWindowPos(window, (rank - 2) * width, height + 27);
+        glfwSetWindowPos(window, (rank - 2) * width, height);
     
     if(rank == 0)
     {
