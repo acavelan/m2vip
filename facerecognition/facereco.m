@@ -10,21 +10,21 @@ NewFaceFile = "other/lena.jpg";
 # 1 - Construction de la matrice des données
 #===============================================================================
 
-M = zeros(N, 300*240);
+X = zeros(N, 300*240);
 
 for i=1:N,
     I = imread(strcat("photos/ph", num2str(i), ".jpg"));
     I = rgb2gray(I);
     I = double(I);
     I = reshape(I, 240*300, 1);
-    M(i,:) = I;
+    X(i,:) = I;
 end;
 
 # Calcule du centre de gravité (moyenne des images)
-G = mean(M)';
+G = mean(X)';
 
 # On recentre les image par rapport à G
-Xtilde = M - ones(N, 1) * G';
+Xtilde = X - ones(N, 1) * G';
 
 
 # 2 - Recherche des eigenface
@@ -39,10 +39,10 @@ L = (Xtilde * Xtilde') / (240*300);
 [D order] = sort(diag(D),'descend');
 V = V(:,order);
 
-# Calcule des vecteurs propres de M
+# Calcule des vecteurs propres de X
 U = Xtilde' * V;
 
-# U: Vecteurs propres de M en fonction de L.
+# U: Vecteurs propres de X en fonction de L.
 # U: N eigenface
 # Normalisation de U
 for i=1:N
@@ -53,7 +53,7 @@ figure;
 colormap(gray);
 for i=1:6
     subplot(2,3,i);
-    imagesc(reshape(M(i,:), 300, 240));
+    imagesc(reshape(X(i,:), 300, 240));
 end;
 
 figure;
@@ -87,7 +87,7 @@ end;
 
 ErrorBase = zeros(N, 1);
 for j=1:14
-    ErrorBase(j) = sum((M(j,:) - Rec(j,:)).^2);
+    ErrorBase(j) = sum((X(j,:) - Rec(j,:)).^2);
     ErrorBase(j) = sqrt(ErrorBase(j));
 end
 ErrorBaseMean = mean(ErrorBase);
@@ -106,7 +106,7 @@ printf("\tError for myself (%d) is %d\n", Me, ErrorBase(Me));
 
 figure;
 colormap(gray);
-subplot(1,2,1); imagesc(reshape(M(Me,:), 300, 240));
+subplot(1,2,1); imagesc(reshape(X(Me,:), 300, 240));
 title(strcat('original (', num2str(Me), ')'));
 subplot(1,2,2); imagesc(reshape(Rec(Me,:), 300, 240));
 title(strcat('reconstructed (', num2str(Me), ')'));

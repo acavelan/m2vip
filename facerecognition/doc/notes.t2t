@@ -1,0 +1,93 @@
+Imagerie Opérationnelle -- Application de la réduction de la dimensionalité
+Cavelan Aurélien
+%%mtime(%d/%m/%Y)
+%!Encoding: utf-8
+%!options: -n --toc
+%!style(tex): notes.sty
+
+
++Objectifs+
+
+On dispose d'une base de données de photos de visages modélisés par une matrice dans laquelle sont stockés les niveaux de gris de chaque pixel. On souhaite pouvoir dire, à partir d'une nouvelle photo (de la même taille que celles de la base de données), si il s'agit d'un individu de la base de données ou d'un inconnu. L'idée consiste à caractériser les dépendances entre chaque pixels pour construire des visages virtuels (eigenfaces) qui concentrent la majeure partie de la variance (inertie) présente dans les photos de la base de données.
+
+
++Méthode+
+
+++Construction de la base de données++
+
+On commence par concaténer les 14 images dans une seule matrice ``X`` en mettant une image par ligne. On peut ensuite calculer le centre de gravité ``G`` de l'image (voir ci-dessous). On note Xtilde la matrice X recentrée autour G.
+
+[moy.jpg]
+
+
+++Recherche des eigenfaces++
+
+Lorsqu'on essaye de calculer les vecteurs propres et valeurs propres de M directement on doit travailler sur une matrice 72000 * 72000, d'où l'erreur de manque de mémoire de Matlab.
+
+En travaillant sur les matrices inverses, on obtient la matrice L de dimension 14 * 14.
+
+```
+# Calcule des vecteurs propres de L
+L = (Xtilde * Xtilde') / (240*300);
+
+[V D] = eig(full(L));
+
+# Sort eigenvectors in decsending order of eigenvalues
+[D order] = sort(diag(D),'descend');
+V = V(:,order);
+
+# Calcule des vecteurs propres de X
+U = Xtilde' * V;
+
+# U: Vecteurs propres de X en fonction de L.
+# U: N eigenface
+# Normalisation de U
+for i=1:N
+    U(:,i) = U(:,i) ./ norm(U(:,i));
+end
+```
+
+Ci-dessous les 6 premières eigenfaces (triées de la plus importante à la moins importante).
+
+[eigenfaces.jpg]
+
+
+++Reconstruction des visages de la base de données à partir des eigenfaces++
+
+On peut reconstruire les visages d'origines à partir des eigenfaces.
+
+```
+C = Xtilde * U;
+
+Rec = zeros(N, 300*240);
+
+for i=1:14
+    for j=1:14
+	Rec(i,:) += C(i,j) * U(:,j)';
+    end;
+    Rec(i,:) += G';
+end;
+```
+
+Ci-dessous les 6 premiers visages de la base de données reconstruits
+
+[reconstructed.jpg]
+
+Ci-dessous mon portait original (à gauche) et reconstruit (à droite).
+
+[me.jpg]
+
+L'erreur moyenne pour les visages de la base de données est de 2897 et l'erreur pour mon portrait est de 781.
+
+
++Traitement d'un nouveau visage+
+
+**Note:** Pour changer le visage à traiter il suffit de modifier la 8ème ligne du fichier ``NewFaceFile = "other/lena.jpg";`` et de relancer le script.
+
+Ci-dessous le portrait de lena original (à gauche) et reconstruit (à droite).
+
+[lena.jpg]
+
+L'erreur est de 19341. En placant le seuil à deux fois l'erreur moyenne (2897), en peut en déduire que lena n'appartient pas à la base de données car l'erreur est trop grande (l'image est trop éloignée).
+
+
