@@ -22,17 +22,55 @@
 static GLfloat light_position[] = { 2.0,2.0,2.0,1.0 };
 
 int move = 1;
-int width = 1280/2, height = 600/2;
-int rX = 0.0f, rY = 0.0f, mX = 400.0f, mY = 300.0f;
+int width = 800/2, height = 600/2;
+int rX = 0.0f, rY = 0.0f, mX = 800/4, mY = 600/4;
 
 // Camera
-float camR = 4.0f;
+float camR = 1.5f;
 float phi = 0.0f, theta = 0.0f;
+float force = 0.02f;
 
 // MPI
 int state = 1;
 int rank = -1;
 int size = -1;
+
+float length(float x, float y, float z)
+{
+    return (float)sqrtf(x * x + y * y + z * z);
+}
+
+void normalize(float *x, float *y, float *z)
+{
+    float l = length(*x, *y, *z);
+    
+    if(l > 0.0f)
+    {
+        *x /= l;
+        *y /= l;
+        *z /= l;
+    }
+}
+
+void drawCubes()
+{
+    glPushMatrix();
+    
+    glTranslatef(0.0f, 0.0f, 4.0f);
+    glTranslatef(-2.0f, -2.0f, 0.0f);
+    for(int i=0; i <5; i++)
+    {
+        for(int j=0; j<5; j++)
+        {
+            glutSolidCube(0.5f);
+            glTranslatef(1.0f, 0.0f, 0.0f);
+        }
+        glTranslatef(-5.0f, 0.0f, 0.0f);
+        glTranslatef(0.0f, 1.0f, 0.0f);
+    }
+    
+    glPopMatrix();
+}
 
 void onDraw(void)
 {
@@ -48,6 +86,14 @@ void onDraw(void)
     float upY = camY2 - camY;
     float upZ = camZ2 - camZ;
     
+    // Normalize Up
+    normalize(&upX, &upY, &upZ);
+    
+    // Rotate Up by 90 degrees
+    float orthoX = -upY;
+    float orthoY = upX;
+    float orthoZ = upZ;
+    
     // Left eye
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -57,24 +103,30 @@ void onDraw(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_TRUE);
 
-    gluLookAt(-0.1f + camX, camY, camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
+    gluLookAt(-orthoX * force + camX, -orthoY * force + camY, -orthoZ * force + camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
     
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     
-    glutWireTeapot(0.5f);
+    drawCubes();
+    
+    glRotatef(180, 1.0f,0.0f,0.0f);
+    glutSolidTeapot(0.5f);
     
     // Right eye
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     
     glClear(GL_DEPTH_BUFFER_BIT);
-    glColorMask(GL_FALSE, GL_FALSE, GL_TRUE, GL_TRUE);
+    glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
     
-    gluLookAt(0.1f + camX, camY, camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
+    gluLookAt(orthoX * force + camX, orthoY * force + camY, orthoZ * force + camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
     
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     
-    glutWireTeapot(0.5f);
+    drawCubes();
+    
+    glRotatef(180, 1.0f, 0.0f, 0.0f);
+    glutSolidTeapot(0.5f);
     
     MPI_Barrier(MPI_COMM_WORLD);
     
@@ -97,19 +149,19 @@ void onResize(GLint w, GLint h)
 
     if(rank == 0) // upper left
     {
-        glFrustum(.5, 0.0, 0.0, .5 * aspect_ratio, 1, 200);
+        glFrustum(-.5, 0.0, 0.0, .5 * aspect_ratio, 0.5f, 200.0f);
     }
     else if(rank == 1) // upper right
     {
-        glFrustum(0.0, -.5, 0.0, .5 * aspect_ratio, 1, 200);
+        glFrustum(0.0, .5, 0.0, .5 * aspect_ratio, 0.5f, 200.0f);
     }
     else if(rank == 2) // lower left
     {
-        glFrustum(.5, 0.0, -.5 * aspect_ratio, 0.0, 1, 200);
+        glFrustum(-.5, 0.0, -.5 * aspect_ratio, 0.0, 0.5f, 200.0f);
     }
     else if(rank == 3) // lower right
     {
-        glFrustum(0.0, -.5, -.5 * aspect_ratio, 0.0, 1, 200);
+        glFrustum(0.0, .5, -.5 * aspect_ratio, 0.0, 0.5f, 200.0f);
     }
     
     glMatrixMode(GL_MODELVIEW);
@@ -127,8 +179,9 @@ void onUpdate(void)
     MPI_Bcast(&rX, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&rY, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(&move, 1, MPI_INT, 0, MPI_COMM_WORLD);
-    //MPI_Barrier(MPI_COMM_WORLD);
-    
+    MPI_Bcast(&camR, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
+    MPI_Bcast(&force, 1, MPI_FLOAT, 0, MPI_COMM_WORLD);
+
     if(move)
     {
         phi += rX * 1.0f;
@@ -143,6 +196,10 @@ void onKeyboardKeyPressed(unsigned char key, int x, int y)
     switch(key)
     {
         case 27: exit(0); break; // ESC
+        case '+': camR -= 0.1f; break;
+        case '-': camR += 0.1f; break;
+        case 'a': force += 0.01f; break;
+        case 'z': force -= 0.01f; break;
         default: break;
     }
 }

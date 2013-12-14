@@ -25,8 +25,46 @@ int width = 800, height = 600;
 float rX = 0.0f, rY = 0.0f, mX = 400.0f, mY = 300.0f;
 
 // Camera
-float camR = 2.0f;
+float camR = 1.5f;
 float phi = 0.0f, theta = 0.0f;
+float force = 0.02f;
+
+float length(float x, float y, float z)
+{
+    return (float)sqrtf(x * x + y * y + z * z);
+}
+
+void normalize(float *x, float *y, float *z)
+{
+    float l = length(*x, *y, *z);
+    
+    if(l > 0.0f)
+    {
+        *x /= l;
+        *y /= l;
+        *z /= l;
+    }
+}
+
+void drawCubes()
+{
+    glPushMatrix();
+    
+    glTranslatef(0.0f, 0.0f, 4.0f);
+    glTranslatef(-2.0f, -2.0f, 0.0f);
+    for(int i=0; i <5; i++)
+    {
+        for(int j=0; j<5; j++)
+        {
+            glutSolidCube(0.5f);
+            glTranslatef(1.0f, 0.0f, 0.0f);
+        }
+        glTranslatef(-5.0f, 0.0f, 0.0f);
+        glTranslatef(0.0f, 1.0f, 0.0f);
+    }
+    
+    glPopMatrix();
+}
 
 void onDraw(void)
 {
@@ -42,6 +80,14 @@ void onDraw(void)
     float upY = camY2 - camY;
     float upZ = camZ2 - camZ;
     
+    // Normalize Up
+    normalize(&upX, &upY, &upZ);
+    
+    // Rotate Up by 90 degrees
+    float orthoX = -upY;
+    float orthoY = upX;
+    float orthoZ = upZ;
+    
     // Left eye
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -51,12 +97,14 @@ void onDraw(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColorMask(GL_TRUE, GL_FALSE, GL_FALSE, GL_TRUE);
 
-    gluLookAt(-0.1f + camX, camY, camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
+    gluLookAt(-orthoX * force + camX, -orthoY * force + camY, -orthoZ * force + camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
     
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glRotatef(180, 1.0f,0.0f,0.0f);
     
-    glutWireTeapot(0.5f);
+    drawCubes();
+    
+    glRotatef(180, 1.0f,0.0f,0.0f);
+    glutSolidTeapot(0.5f);
     
     // Right eye
     glMatrixMode(GL_MODELVIEW);
@@ -65,12 +113,14 @@ void onDraw(void)
     glClear(GL_DEPTH_BUFFER_BIT);
     glColorMask(GL_FALSE, GL_TRUE, GL_TRUE, GL_TRUE);
     
-    gluLookAt(0.1f + camX, camY, camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
+    gluLookAt(orthoX * force + camX, orthoY * force + camY, orthoZ * force + camZ, 0.0f, 0.0f, 0.0f, upX, upY, upZ);
     
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glRotatef(180, 1.0f, 0.0f, 0.0f);
     
-    glutWireTeapot(0.5f);
+    drawCubes();
+    
+    glRotatef(180, 1.0f, 0.0f, 0.0f);
+    glutSolidTeapot(0.5f);
     
     glutSwapBuffers();
 }
@@ -100,6 +150,9 @@ void onUpdate(void)
         theta += rY * 1.0f;
     }
     
+    rX = 0.0f;
+    rY = 0.0f;
+    
     glutPostRedisplay();
 }
 
@@ -108,6 +161,10 @@ void onKeyboardKeyPressed(unsigned char key, int x, int y)
     switch(key)
     {
         case 27: exit(0); break; // ESC
+        case '+': camR -= 0.1f; break;
+        case '-': camR += 0.1f; break;
+        case 'a': force += 0.01f; break;
+        case 'z': force -= 0.01f; break;
         default: break;
     }
 }

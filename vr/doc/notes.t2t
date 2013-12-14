@@ -6,4 +6,13 @@ Cavelan Aurélien
 %!style(tex): notes.sty
 
 
-+3D 
++Objectfis+
+
+Nous disposons seulement de matériel standard. Le but est d'afficher une scène en 3D anaglyph via OpenGL en utilisant un filtre rouge pour l'oeil gauche et un filtre cyan pour l'oeil droite. La même scène est ensuite calculée puis affichée par quatre processus sur quatre fenêtres différentes comme on le ferait sur un cluster.
+
+
++Affichage de la scène+
+
+La 3D stéréoscopique est obtenue en calculant un rendu pour l'oeil gauche et un rendu pour l'oeil droite. Afin que le cerveau puisse différencier les deux images on utilise un filtre rouge pour l'oeil gauche et un filtre cyan pour l'oeil droite.
+
+L'écartement des deux caméras doit être fixe et à l'horizontale (on suppose que la tête est droite). On effectue un premier rendu en placant la caméra avec la fonction gluLookAt()
