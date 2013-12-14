@@ -148,21 +148,13 @@ void onResize(GLint w, GLint h)
     float aspect_ratio = ((float)height) / ((float)width);
 
     if(rank == 0) // upper left
-    {
         glFrustum(-.5, 0.0, 0.0, .5 * aspect_ratio, 0.5f, 200.0f);
-    }
     else if(rank == 1) // upper right
-    {
         glFrustum(0.0, .5, 0.0, .5 * aspect_ratio, 0.5f, 200.0f);
-    }
     else if(rank == 2) // lower left
-    {
         glFrustum(-.5, 0.0, -.5 * aspect_ratio, 0.0, 0.5f, 200.0f);
-    }
     else if(rank == 3) // lower right
-    {
         glFrustum(0.0, .5, -.5 * aspect_ratio, 0.0, 0.5f, 200.0f);
-    }
     
     glMatrixMode(GL_MODELVIEW);
 }
