@@ -1,0 +1,45 @@
+Computational power (matric multiplication example)
+===================================================
+
+1.66 Ghz =~ 1.66 M cycles/s
+1.66 Ghz + SSE = 1.66 * 4 = 6.4M
+
+1 op = 1 cycle
+
+1024 * 1024 * (1024 + ops) =~ 2M
+
+=> 1/3s = 0.33s
+
+
+HugePages (Translation Lookaside Buffer)
+==========================================
+
+sudo hugeadm --create-global-mounts
+sudo hugeadm --pool-pages-max 2M:256
+sudo hugeadm --pool-pages-min 2M:0
+
+Then as a user just replace malloc and free with:
+
+char *mem = (char*)(get_hugepage_region(20000000, GHR_DEFAULT));
+free_hugepage_region(mem);
+
+
+NUMA
+=====
+
+Multiple CPUs which doesn't share any L3 cache memory. Therefore, weh have to place the threads on CPUs depending on which resource they need (GPU ? Network ? Which CPU has a direct access to theses ? CPUs are connected to each others but using those links during computation will result in a massive overhead.
+
+
+Tools
+======
+
+Display useful informations on cpus and computer's physical layout
+$> lstopo
+
+Display link informations between processors
+$> hwloc-distances
+
+perf
+$> perf stat ./exec
+
+PAPI (target a part of the code)

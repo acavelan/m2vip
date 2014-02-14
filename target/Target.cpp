@@ -155,7 +155,7 @@ std::vector<object> ChanVeseDetector::detect(unsigned char *image, int width, in
 		}
 	}
 	
-	int resolution = 100;
+	int resolution = 250;
 	
 	// Elude
 	for(unsigned int i=0; i<objects.size(); i++)
@@ -226,7 +226,7 @@ std::vector<object> SimpleMatcher::match(const std::vector<object> &model, const
 	
 	for(unsigned int i=0; i<list.size(); i++)
 	{	
-		if(list[i].angles.size() >= 4)
+		/*if(list[i].angles.size() >= 4)
 		{
 			for(unsigned int j=0; j<model.size(); j++)
 			{
@@ -238,8 +238,18 @@ std::vector<object> SimpleMatcher::match(const std::vector<object> &model, const
 						results.push_back(list[i]);
 				}
 			}
+		}*/
+        if(list[i].angles.size() >= 2)
+		{
+			for(unsigned int j=0; j<model.size(); j++)
+			{
+				if(list[i].angles.size() < model[j].angles.size() + 5 && list[i].angles.size() > model[j].angles.size() - 5)
+				{				
+						results.push_back(list[i]);
+				}
+			}
 		}
 	}
-	
+    
 	return results;
 }

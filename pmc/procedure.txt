@@ -1,0 +1,75 @@
+Notes: 
+
+- On test des matrices de taille 256, 512, 1024, 2048, 4096
+- Pour N > 1024 le cache est trop petit et on observe de grosses différences
+
+Machines:
+- OrdiCentre Intel Celeron (x2)
+- Asus Intel Core i7 (x4 + 4)
+
+Benchs
+================================================================================
+
+naive                   - triple boucle ligne / colonnes
+cache                   - ligne / ligne
+cache-unroll-1-4
+cache-unroll-1-8    
+cache-unroll-1-16   
+cache-unroll-2-4 
+cache-unroll-2-8 
+cache-unroll-2-16
+cache-unroll-1-4-sse
+cache-unroll-1-8-sse
+cache-unroll-1-16-sse
+cache-unroll-2-4-sse
+cache-unroll-2-8-sse
+cache-unroll-2-16-sse
+blocks                  - optimisation du cache par blocs (bloc = taille du cache)
+blocks-32               - recherche de la taille optimale du bloc
+blocks-64
+blocks-80
+blocks-96
+blocks-128
+blocks-256
+blocks-unroll-1-4
+blocks-unroll-1-8    
+blocks-unroll-1-16   
+blocks-unroll-2-4 
+blocks-unroll-2-8 
+blocks-unroll-2-16
+blocks-unroll-1-4-sse
+blocks-unroll-1-8-sse
+blocks-unroll-1-16-sse
+blocks-unroll-2-4-sse
+blocks-unroll-2-8-sse
+blocks-unroll-2-16-sse
+
+naïf-omp-2
+naïf-omp-4
+naïf-omp-8
+
+cache-omp-2
+cache-omp-4
+cache-omp-8
+
+blocks-omp-2
+blocks-omp-4
+blocks-omp-8
+
+
+Experimentations
+================================================================================
+
+Hugepages
+CUDA
+
+
+Comparaisons
+================================================================================
+
+- Blas
+- Eigen
+- Matlab
+- Python
+- Java
+- D

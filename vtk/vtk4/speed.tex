@@ -1,0 +1,59 @@
+\documentclass[12pt,a4paper,utf8x]{report}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[frenchb]{babel}
+
+% Pour pouvoir utiliser
+\usepackage{ucs}
+
+\usepackage{url} % Pour avoir de belles url
+\usepackage {geometry}
+
+% Pour mettre du code source
+\usepackage {listings}
+% Pour pouvoir passer en paysage
+\usepackage{lscape}
+
+% Pour pouvoir faire plusieurs colonnes
+\usepackage {multicol}
+
+% Pour crééer un index
+\usepackage{makeidx}
+\usepackage{calc} 
+% Pour la couleur
+\usepackage{color}
+
+% Pour les images
+\usepackage{graphicx}
+\usepackage{float} % Pour placer les image là on lui dit de les placer
+
+\usepackage[pdftex,pdfborder={0 0 0}]{hyperref}
+
+\usepackage{tikz} % Explication : http://d.xav.free.fr/tikz/index.html
+\usepackage{textcomp}
+\usepackage{pgfplots} % Plus simple
+
+
+\begin{document}
+
+
+\begin{figure}[H]
+    \center
+        \begin{tikzpicture}
+                       \begin{axis}[ xlabel=Nombre de tranches utilis\'{e}s, ylabel=Temps d'exécution (heures), grid=major, xmin=1, xmax=48, ymin=0, width=12cm, height=7.5cm, xtick={1, 2, 4, 8, 16, 24, 48}]
+                \addplot[color=blue,mark=x] coordinates
+                {
+                    (1,  22.9)
+                    (2,   13.28)
+                    (4,  8.58)
+                    (8,  4.5)
+                    (16, 2.28)
+                    (24,  1.61 )
+                    (48,  0.88)
+                };
+            \end{axis}
+        \end{tikzpicture}
+    \caption{Temps d'exécution du calcul }
+\end{figure}
+
+\end{document}
