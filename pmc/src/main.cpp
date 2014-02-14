@@ -50,7 +50,7 @@ int main(int argc, char **argv)
     
     int ms = duration_cast<milliseconds>(end-start).count();
     
-    printf("time: %d ms\n", ms);
+    printf("%d\n", ms);
 
     #ifdef CHECK
         #if CHECK==true
