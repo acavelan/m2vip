@@ -24,13 +24,17 @@ cache-unroll-1-16-sse
 cache-unroll-2-4-sse
 cache-unroll-2-8-sse
 cache-unroll-2-16-sse
+cache-unroll-4-4-sse
+cache-unroll-4-8-sse
 blocks                  - optimisation du cache par blocs (bloc = taille du cache)
 blocks-32               - recherche de la taille optimale du bloc
 blocks-64
 blocks-80
 blocks-96
 blocks-128
+blocks-192
 blocks-256
+blocks-512
 blocks-unroll-1-4
 blocks-unroll-1-8    
 blocks-unroll-1-16   
@@ -43,6 +47,8 @@ blocks-unroll-1-16-sse
 blocks-unroll-2-4-sse
 blocks-unroll-2-8-sse
 blocks-unroll-2-16-sse
+blocks-unroll-4-4-sse
+blocks-unroll-4-8-sse
 
 naïf-omp-2
 naïf-omp-4
