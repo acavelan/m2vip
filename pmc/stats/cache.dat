@@ -1,0 +1,16 @@
+cache 13940
+cache_unroll_1_16 12464
+cache_unroll_1_4 12301
+cache_unroll_1_8 12268
+cache_unroll_2_16 11299
+cache_unroll_2_4 12302
+cache_unroll_2_8 12318
+cache_unroll_sse_1_16 4555
+cache_unroll_sse_1_4 5277
+cache_unroll_sse_1_8 4647
+cache_unroll_sse_2_16 4563
+cache_unroll_sse_2_4 4642
+cache_unroll_sse_2_8 4456
+cache_unroll_sse_4_4 4172
+cache_unroll_sse_4_8 4152
+

@@ -1,0 +1,15 @@
+basic 14818
+unroll_1_16 12787
+unroll_1_4 12327
+unroll_1_8 12341
+unroll_2_16 11528
+unroll_2_4 12342
+unroll_2_8 12505
+unroll_sse_1_16 4004
+unroll_sse_1_4 4942
+unroll_sse_1_8 4252
+unroll_sse_2_16 3244
+unroll_sse_2_4 3476
+unroll_sse_2_8 3302
+unroll_sse_4_4 3023
+unroll_sse_4_8 2923
