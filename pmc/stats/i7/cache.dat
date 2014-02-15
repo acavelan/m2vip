@@ -1,0 +1,15 @@
+cache.times 8884
+cache_unroll_1_16.times 8109
+cache_unroll_1_4.times 7932
+cache_unroll_1_8.times 7921
+cache_unroll_2_16.times 7129
+cache_unroll_2_4.times 7763
+cache_unroll_2_8.times 7779
+cache_unroll_sse_1_16.times 3030
+cache_unroll_sse_1_4.times 3665
+cache_unroll_sse_1_8.times 3133
+cache_unroll_sse_2_16.times 2684
+cache_unroll_sse_2_4.times 2703
+cache_unroll_sse_2_8.times 2626
+cache_unroll_sse_4_4.times 2460
+cache_unroll_sse_4_8.times 2416

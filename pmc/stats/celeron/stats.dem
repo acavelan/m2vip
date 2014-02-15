@@ -2,12 +2,11 @@ reset
 set xlabel "Implementation"
 set ylabel "Time(ms)"
 set style data histogram
-set style histogram cluster gap 0
+set style histogram cluster gap 1.0
 set style fill solid border -1
 set boxwidth 1.0 relative
 set style fill transparent solid 0.6 noborder
 set xtic rotate by -45 scale 0 font ",8"
 
-plot 	'naive.dat' using 2:xticlabel(1) lc rgb"red" title "naive", \
-		'cache.dat' using 2:xticlabel(1) lc rgb"green" title "cache", \
+plot 	'cache.dat' using 2:xticlabel(1) lc rgb"green" title "cache", \
 		'blocks.dat' using 2:xticlabel(1) lc rgb"blue" title "blocks"
