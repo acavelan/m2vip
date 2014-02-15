@@ -7,6 +7,7 @@
 #include "mat/naive.hpp"
 #include "mat/cache.hpp"
 #include "mat/blocks.hpp"
+#include "mat/threads.hpp"
 
 // Error margin with float
 #define EPSILON 0.00001

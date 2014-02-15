@@ -48,20 +48,41 @@ blocks-unroll-4-8-sse
 
 => Résultats dans stats/
 
+=> perf stat donne des résultats très divergeant suivant le déroulement.
+
+4_4 semble être le meilleurs compromis.
+
+Asus core i7 blocks-unroll-4-4-sse
+Performance counter stats for 'bin/blocks_unroll_sse_4_4 2048':
+
+       1576.113617 task-clock (msec)         #    0.997 CPUs utilized          
+               101 context-switches          #    0.064 K/sec                  
+                 1 cpu-migrations            #    0.001 K/sec                  
+             1,854 page-faults               #    0.001 M/sec                  
+     4,404,106,472 cycles                    #    2.794 GHz                    
+     1,975,356,900 stalled-cycles-frontend   #   44.85% frontend cycles idle   <- 70%
+       334,104,618 stalled-cycles-backend    #    7.59% backend  cycles idle   
+     7,606,013,934 instructions              #    1.73  insns per cycle        <- 1.70
+                                             #    0.26  stalled cycles per insn
+       685,399,974 branches                  #  434.867 M/sec                  <- 215.000
+         4,524,338 branch-misses             #    0.66% of all branches        
+
+       1.580535382 seconds time elapsed
+
 Recherche des meilleurs implémentations et parallélisation
 ==========================================================
 
-naïf-omp-2
-naïf-omp-4
-naïf-omp-8
+naïf-omp-2		42500, i7
+naïf-omp-4		34100, i7
+naïf-omp-8		35000, i7
 
-cache-omp-2
-cache-omp-4
-cache-omp-8
+cache-omp-2		1170, i7
+cache-omp-4		625, i7
+cache-omp-8		460, i7
 
-blocks-omp-2
-blocks-omp-4
-blocks-omp-8
+blocks-omp-2	835, i7
+blocks-omp-4	465, i7
+blocks-omp-8	400, i7
 
 
 Experimentations
@@ -76,7 +97,7 @@ Comparaisons
 
 - CBLAS		7700, i7
 - Eigen		890, i7
-- Matlab
+- Matlab	9300, i7
 - Python
 - Java
 - D

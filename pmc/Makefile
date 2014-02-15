@@ -12,13 +12,15 @@ REPEAT=10
 
 all: naive all_cache all_blocks
 
-all_cache: dirs mat cache all_cache_unroll all_cache_sse 
+all_cache: dirs mat cache all_cache_unroll all_cache_sse all_omp
 all_cache_unroll: dirs mat cache_unroll_1_4 cache_unroll_1_8 cache_unroll_1_16 cache_unroll_2_4 cache_unroll_2_8 cache_unroll_2_16
 all_cache_sse: dirs mat cache_unroll_sse_1_4 cache_unroll_sse_1_8 cache_unroll_sse_1_16 cache_unroll_sse_2_4 cache_unroll_sse_2_8 cache_unroll_sse_2_16 cache_unroll_sse_4_4 cache_unroll_sse_4_8
 
 all_blocks: dirs mat blocks all_blocks_unroll all_blocks_sse
 all_blocks_unroll: dirs mat blocks_unroll_1_4 blocks_unroll_1_8 blocks_unroll_1_16 blocks_unroll_2_4 blocks_unroll_2_8 blocks_unroll_2_16
 all_blocks_sse: dirs mat blocks_unroll_sse_1_4 blocks_unroll_sse_1_8 blocks_unroll_sse_1_16 blocks_unroll_sse_2_4 blocks_unroll_sse_2_8 blocks_unroll_sse_2_16 blocks_unroll_sse_4_4 blocks_unroll_sse_4_8
+
+all_omp: dirs mat naive_omp cache_omp blocks_omp
 
 benchmark: clean_benchmarks benchmark_naive benchmark_cache benchmark_blocks
 benchmark_naive:
@@ -138,6 +140,15 @@ blocks_unroll_sse_4_4: dirs mat_blocks
 blocks_unroll_sse_4_8: dirs mat_blocks
 	$(CXX) -o bin/$@ src/main.cpp obj/mat.o obj/blocks.o $(CXXFLAGS) -DCHECK=$(CHECK) -DMUL_FUNC=$@
 
+naive_omp: dirs mat_threads
+	$(CXX) -o bin/$@ src/main.cpp obj/mat.o obj/threads.o $(CXXFLAGS) -DCHECK=$(CHECK) -DMUL_FUNC=$@ -fopenmp
+
+cache_omp: dirs mat_threads
+	$(CXX) -o bin/$@ src/main.cpp obj/mat.o obj/threads.o $(CXXFLAGS) -DCHECK=$(CHECK) -DMUL_FUNC=$@ -fopenmp
+
+blocks_omp: dirs mat_threads
+	$(CXX) -o bin/$@ src/main.cpp obj/mat.o obj/threads.o $(CXXFLAGS) -DCHECK=$(CHECK) -DMUL_FUNC=$@ -fopenmp
+
 mat: dirs
 	$(CXX) -o obj/mat.o -c src/mat/mat.cpp $(CXXFLAGS)
 
@@ -149,7 +160,10 @@ mat_cache: dirs mat
 
 mat_blocks: dirs mat
 	$(CXX) -o obj/blocks.o -c src/mat/blocks.cpp $(CXXFLAGS) -DBLOCK_SIZE=$(BLOCK_SIZE)
-
+	
+mat_threads: dirs mat
+	$(CXX) -o obj/threads.o -c src/mat/threads.cpp $(CXXFLAGS) -DBLOCK_SIZE=$(BLOCK_SIZE) -fopenmp
+	
 dirs:
 	mkdir -p bin obj
 
