@@ -53,21 +53,24 @@ blocks-unroll-4-8-sse
 4_4 semble être le meilleurs compromis.
 
 Asus core i7 blocks-unroll-4-4-sse
-Performance counter stats for 'bin/blocks_unroll_sse_4_4 2048':
+Performance counter stats for 'bin/blocks_unroll_sse_4_4 2048':					bin/blocks_unroll_sse_4_8
 
-       1576.113617 task-clock (msec)         #    0.997 CPUs utilized          
+       1576.113617 task-clock (msec)         #    0.997 CPUs utilized           <- 0.999
                101 context-switches          #    0.064 K/sec                  
                  1 cpu-migrations            #    0.001 K/sec                  
              1,854 page-faults               #    0.001 M/sec                  
-     4,404,106,472 cycles                    #    2.794 GHz                    
-     1,975,356,900 stalled-cycles-frontend   #   44.85% frontend cycles idle   <- 70%
-       334,104,618 stalled-cycles-backend    #    7.59% backend  cycles idle   
-     7,606,013,934 instructions              #    1.73  insns per cycle        <- 1.70
-                                             #    0.26  stalled cycles per insn
-       685,399,974 branches                  #  434.867 M/sec                  <- 215.000
-         4,524,338 branch-misses             #    0.66% of all branches        
+     4,404,106,472 cycles                    #    2.794 GHz                    	<- 2.844
+     1,975,356,900 stalled-cycles-frontend   #   44.85% frontend cycles idle    <- 70%
+       334,104,618 stalled-cycles-backend    #    7.59% backend  cycles idle    <- 5.87
+     7,606,013,934 instructions              #    1.73  insns per cycle         <- 1.70
+                                             #    0.26  stalled cycles per insn <- 0.33
+       685,399,974 branches                  #  434.867 M/sec                   <- 275.000
+         4,524,338 branch-misses             #    0.66% of all branches         <- 1.08
 
        1.580535382 seconds time elapsed
+
+Le gain est léger à cause de la réduction du nombre de branch, 
+mais les perf brutes de calcul et de mémoire son moins bonnes !
 
 Recherche des meilleurs implémentations et parallélisation
 ==========================================================
@@ -98,6 +101,3 @@ Comparaisons
 - CBLAS		7700, i7
 - Eigen		890, i7
 - Matlab	9300, i7
-- Python
-- Java
-- D
