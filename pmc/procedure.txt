@@ -74,8 +74,8 @@ CUDA
 Comparaisons
 ================================================================================
 
-- CBLAS		7700, i7x1
-- Eigen		892, i7x1
+- CBLAS		7700, i7
+- Eigen		890, i7
 - Matlab
 - Python
 - Java
