@@ -31,6 +31,8 @@ blocks                  - optimisation du cache par blocs (bloc = taille du cach
 Recherche du bloc optimal pour la machine X
 ===========================================
 
+vitesse blocks-unroll-4-8-sse pour 32 64 80 96 128 256 512
+
 blocks-unroll-1-4
 blocks-unroll-1-8    
 blocks-unroll-1-16   
@@ -72,20 +74,33 @@ Performance counter stats for 'bin/blocks_unroll_sse_4_4 2048':					bin/blocks_u
 Le gain est léger à cause de la réduction du nombre de branch, 
 mais les perf brutes de calcul et de mémoire son moins bonnes !
 
-Recherche des meilleurs implémentations et parallélisation
-==========================================================
+Graphe sur différentes tailles de matrices
+==========================================
 
-naïf-omp-2		42500, i7
-naïf-omp-4		34100, i7
-naïf-omp-8		35000, i7
+Comparaisons des graphes
+Comparaisons des meilleurs algos sur différentes tailles de matrices
 
-cache-omp-2		1170, i7
-cache-omp-4		625, i7
-cache-omp-8		460, i7
 
-blocks-omp-2	835, i7
-blocks-omp-4	465, i7
-blocks-omp-8	400, i7
+				Proc	256, 	512, 	1024, 	2048, 	4096
+naif			celeron 55,		630,	10600	
+best-cache		celeron 4,		38, 	485,	3915,	32400
+best-blocks		celeron 4,		37, 	440, 	2750, 	34300
+naïf-omp-2		celeron 32, 	82,		7600, 	60900
+cache-omp-2		celeron 2, 		22, 	330, 	3200, 	29200
+blocks-omp-2	celeron 15,		28, 	222, 	1560,	24900
+
+naif			i7
+best-cache		i7
+best-blocks		i7
+naïf-omp-2		i7
+naïf-omp-4		i7
+naïf-omp-8		i7
+cache-omp-2		i7
+cache-omp-4		i7
+cache-omp-8		i7
+blocks-omp-2	i7
+blocks-omp-4	i7
+blocks-omp-8	i7
 
 
 Experimentations
@@ -97,7 +112,11 @@ CUDA
 
 Comparaisons
 ================================================================================
+			Proc	256, 	512, 	1024, 	2048, 	4096
+- CBLAS		i7
+- Eigen		i7
+- Matlab	i7
 
-- CBLAS		7700, i7
-- Eigen		890, i7
-- Matlab	9300, i7
+- CBLAS		celeron 23, 	183, 	1584, 	12500	100434
+- Eigen		celeron 4, 		23, 	176, 	1385, 	10926
+- Matlab	celeron 26,		250,	2094,	14000,	115700
