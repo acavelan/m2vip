@@ -48,6 +48,8 @@ void normalize(float *x, float *y, float *z)
 
 void drawCubes()
 {
+    glClearColor(0, 0, 0, 1.0);
+    
     glPushMatrix();
     
     glTranslatef(0.0f, 0.0f, 4.0f);
