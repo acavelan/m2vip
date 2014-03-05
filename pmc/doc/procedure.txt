@@ -1,7 +1,7 @@
 Notes: 
 
 - On test des matrices de taille 256, 512, 1024, 2048, 4096
-- Pour N > 1024 le cache est trop petit et on observe de grosses différences
+- Pour N > 1024 (32Mo) le cache est trop petit et on observe de grosses différences
 
 Machines:
 - OrdiCentre Intel Celeron (x2)
@@ -81,27 +81,31 @@ Comparaisons des graphes
 Comparaisons des meilleurs algos sur différentes tailles de matrices
 
 
-				Proc	256, 	512, 	1024, 	2048, 	4096
-naif			celeron 55,		630,	10600	
-best-cache		celeron 4,		38, 	485,	3915,	32400
-best-blocks		celeron 4,		37, 	440, 	2750, 	34300
-naïf-omp-2		celeron 32, 	82,		7600, 	60900
-cache-omp-2		celeron 2, 		22, 	330, 	3200, 	29200
-blocks-omp-2	celeron 15,		28, 	222, 	1560,	24900
+				Proc	256 	512 	1024 	2048 	4096
+naif			    celeron 55		630		10600	
+best-cache		celeron 4		38	 	485		3915	32400
+best-blocks		celeron 4		37	 	440 	2750 	34300
+naïf-omp-2		celeron 3200 	82		7600 	60900
+cache-omp-2		celeron 2 		22	 	330 	3200 	29200
+blocks-omp-2	celeron 15		28	 	222 	1560	24900
 
-naif			i7
-best-cache		i7
-best-blocks		i7
-naïf-omp-2		i7
-naïf-omp-4		i7
-naïf-omp-8		i7
-cache-omp-2		i7
-cache-omp-4		i7
-cache-omp-8		i7
-blocks-omp-2	i7
-blocks-omp-4	i7
-blocks-omp-8	i7
+naif			    i7		41		337		4489	75956
+best-cache		i7		2 		21 		175 	220 	18580
+best-blocks		i7		2 		22 		207 	1745 	13800
+naïf-omp-2		i7		17 		158 	1949 	45632
+naïf-omp-4		i7 		17 		85 		1077 	28826
+naïf-omp-8		i7 		17 		74 		1296 	33500
+cache-omp-2		i7 		1 		10 		80 		1270 	10820
+cache-omp-4		i7		4 		10 		65 		610 	5560
+cache-omp-8		i7 		8 		12 		45 		490 	4950
+blocks-omp-2	i7 		1 		15 		100 	830 	6860
+blocks-omp-4	i7 		5 		12 		60 		450 	3940
+blocks-omp-8	i7 		7 		10 		56 		415 	4420
 
+Observations:
+=============
+
+L'ago par blocks est plus rapide sans hyperthreads, sur 4 coeurs (mémoire).
 
 Experimentations
 ================================================================================
@@ -112,7 +116,7 @@ CUDA
 
 Comparaisons
 ================================================================================
-			Proc	256, 	512, 	1024, 	2048, 	4096
+			    Proc	  256, 	512, 	1024, 	2048,  4096
 - CBLAS		i7
 - Eigen		i7
 - Matlab	i7

@@ -1,5 +1,8 @@
 #include "cache.hpp"
+
+#ifdef __SSE3__
 #include <immintrin.h>
+#endif
 
 namespace mat
 {
@@ -152,6 +155,7 @@ namespace mat
 	            }
 	}
 
+#ifdef __SSE3__
 	void cache_unroll_sse_1_4(const float *m1, const float *m2, float *m3, int size)
 	{
 		__m128 r0, r1, r2;
@@ -364,4 +368,5 @@ namespace mat
 	        }
 	    }
 	}
+#endif
 }

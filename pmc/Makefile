@@ -10,9 +10,9 @@ CHECK=false
 MATSIZE=2048
 REPEAT=10
 
-all: naive all_cache all_blocks
+all: naive all_cache all_blocks all_omp
 
-all_cache: dirs mat cache all_cache_unroll all_cache_sse all_omp
+all_cache: dirs mat cache all_cache_unroll all_cache_sse
 all_cache_unroll: dirs mat cache_unroll_1_4 cache_unroll_1_8 cache_unroll_1_16 cache_unroll_2_4 cache_unroll_2_8 cache_unroll_2_16
 all_cache_sse: dirs mat cache_unroll_sse_1_4 cache_unroll_sse_1_8 cache_unroll_sse_1_16 cache_unroll_sse_2_4 cache_unroll_sse_2_8 cache_unroll_sse_2_16 cache_unroll_sse_4_4 cache_unroll_sse_4_8
 
